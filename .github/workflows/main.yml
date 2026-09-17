@@ -31,7 +31,7 @@ jobs:
 
       - name: Extract Pace Coach
         run: |
-          unzip -q PaceCoachV3_0_Android.zip -d pacecoach
+          unzip -q PaceCoachV3_0_1_Android.zip -d pacecoach
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4

@@ -32,33 +32,19 @@ jobs:
       - name: Extract Pace Coach
         run: |
           unzip -q PaceCoachV3_0_Android.zip -d pacecoach
-          echo "Projeto extraído:"
-          find pacecoach -maxdepth 4 -type f | sort | head -150
 
-      - name: Find Gradle wrapper
-        run: |
-          GRADLEW=$(find pacecoach -name "gradlew" -type f | head -1)
-
-          if [ -z "$GRADLEW" ]; then
-            echo "ERRO: gradlew não encontrado após extrair o projeto."
-            exit 1
-          fi
-
-          echo "Gradle encontrado em:"
-          echo "$GRADLEW"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Build APK
+        working-directory: pacecoach/pc30
         run: |
-          GRADLEW=$(find pacecoach -name "gradlew" -type f | head -1)
-          PROJECT_DIR=$(dirname "$GRADLEW")
-
-          cd "$PROJECT_DIR"
-
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PaceCoach-debug
-          path: 'pacecoach/**/build/outputs/apk/debug/*.apk'
+          path: 'pacecoach/pc30/app/build/outputs/apk/debug/*.apk'

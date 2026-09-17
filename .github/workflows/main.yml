@@ -22,8 +22,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: ''
 
       - name: Install Android SDK
         run: |
@@ -31,21 +29,29 @@ jobs:
                      "platforms;android-35" \
                      "build-tools;35.0.0"
 
-      - name: Find Android project
+      - name: Extract Pace Coach
         run: |
-          echo "Arquivos encontrados:"
-          find . -maxdepth 4 -type f | sort | head -150
+          unzip -q PaceCoachV3_0_Android.zip -d pacecoach
+          echo "Projeto extraído:"
+          find pacecoach -maxdepth 4 -type f | sort | head -150
 
-      - name: Build APK
+      - name: Find Gradle wrapper
         run: |
-          GRADLEW=$(find . -name "gradlew" -type f | head -1)
+          GRADLEW=$(find pacecoach -name "gradlew" -type f | head -1)
 
           if [ -z "$GRADLEW" ]; then
-            echo "ERRO: gradlew não encontrado."
+            echo "ERRO: gradlew não encontrado após extrair o projeto."
             exit 1
           fi
 
+          echo "Gradle encontrado em:"
+          echo "$GRADLEW"
+
+      - name: Build APK
+        run: |
+          GRADLEW=$(find pacecoach -name "gradlew" -type f | head -1)
           PROJECT_DIR=$(dirname "$GRADLEW")
+
           cd "$PROJECT_DIR"
 
           chmod +x gradlew
@@ -55,4 +61,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PaceCoach-debug
-          path: '**/build/outputs/apk/debug/*.apk' 
+          path: 'pacecoach/**/build/outputs/apk/debug/*.apk'

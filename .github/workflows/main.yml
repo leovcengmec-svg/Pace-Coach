@@ -21,32 +21,38 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
 
       - name: Install Android SDK
         run: |
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" \
+                     "platforms;android-35" \
+                     "build-tools;35.0.0"
 
       - name: Find Android project
         run: |
-          echo "Arquivos do repositório:"
-          find . -maxdepth 3 -type f | head -100
+          echo "Arquivos encontrados:"
+          find . -maxdepth 4 -type f | sort | head -150
 
       - name: Build APK
         run: |
-          if find . -name "gradlew" -type f | grep -q .; then
-            GRADLEW=$(find . -name "gradlew" -type f | head -1)
-            PROJECT_DIR=$(dirname "$GRADLEW")
-            cd "$PROJECT_DIR"
-            chmod +x gradlew
-            ./gradlew assembleDebug --no-daemon
-          else
+          GRADLEW=$(find . -name "gradlew" -type f | head -1)
+
+          if [ -z "$GRADLEW" ]; then
             echo "ERRO: gradlew não encontrado."
             exit 1
           fi
+
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          cd "$PROJECT_DIR"
+
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PaceCoach-debug
-          path: '**/build/outputs/apk/debug/*.apk'
+          path: '**/build/outputs/apk/debug/*.apk' 

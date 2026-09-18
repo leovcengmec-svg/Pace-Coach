@@ -27,34 +27,45 @@ jobs:
         run: |
           yes | sdkmanager --licenses || true
           sdkmanager "platform-tools"
-          sdkmanager "platforms;android-36"
+          sdkmanager "platforms;android-37"
           sdkmanager "build-tools;36.0.0"
+
+      - name: Install Gradle 9.6.1
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-9.6.1-bin.zip
+          unzip -q gradle-9.6.1-bin.zip -d "$HOME"
+          echo "$HOME/gradle-9.6.1/bin" >> "$GITHUB_PATH"
+          gradle --version
 
       - name: Extract Pace Coach
         run: |
           rm -rf runnerup
           unzip -q PaceCoach_RunnerUp_V1_7_source.zip -d runnerup
 
-      - name: Adjust SDK for build
+      - name: Align Android SDK versions
         working-directory: runnerup
         run: |
-          sed -i "s/compileSdk = 37.2/compileSdk = 36/" build.gradle
-          sed -i "s/targetSdk = 37.2/targetSdk = 36/" build.gradle
           sed -i "s/buildToolsVersion = '37.0.0'/buildToolsVersion = '36.0.0'/" build.gradle
+          sed -i "s/compileSdk = 37.2/compileSdk = 37/" build.gradle
+          sed -i "s/targetSdk = 37.2/targetSdk = 37/" build.gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.0.0'
+      - name: Prepare Git metadata
+        working-directory: runnerup
+        run: |
+          git init
+          git config user.email "build@pacecoach.local"
+          git config user.name "Pace Coach Build"
+          git add -A
+          git commit -m "Pace Coach V1.7 build base" >/dev/null 2>&1 || true
 
       - name: Build APK
         working-directory: runnerup
         run: |
-          chmod +x gradlew
           gradle :app:assembleLatestDebug --no-daemon
 
       - name: Find APK
         run: |
+          echo "===== APK GERADO ====="
           find runnerup/app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Upload APK

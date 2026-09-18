@@ -34,7 +34,7 @@ jobs:
       - name: Extract Pace Coach
         run: |
           rm -rf runnerup
-          unzip -q PaceCoach_RunnerUp_V1_8_1_source.zip -d runnerup
+          unzip -q PaceCoach_RunnerUp_V3_0_source.zip -d runnerup
 
       - name: Align Android SDK versions
         working-directory: runnerup

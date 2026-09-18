@@ -11,44 +11,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # 1. Baixa o repositório
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2. Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      # 3. Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
+      # 4. Instala o Android SDK
       - name: Install Android SDK
         run: |
           yes | sdkmanager --licenses || true
           sdkmanager "platform-tools"
-          sdkmanager "platforms;android-37"
+          sdkmanager "platforms;android-36"
           sdkmanager "build-tools;36.0.0"
 
-      - name: Install Gradle 9.6.1
-        run: |
-          wget -q https://services.gradle.org/distributions/gradle-9.6.1-bin.zip
-          unzip -q gradle-9.6.1-bin.zip -d "$HOME"
-          echo "$HOME/gradle-9.6.1/bin" >> "$GITHUB_PATH"
-          gradle --version
-
+      # 5. Extrai o Pace Coach V1.7
       - name: Extract Pace Coach
         run: |
           rm -rf runnerup
           unzip -q PaceCoach_RunnerUp_V1_7_source.zip -d runnerup
 
+      # 6. Ajusta as versões do projeto
       - name: Align Android SDK versions
         working-directory: runnerup
         run: |
           sed -i "s/buildToolsVersion = '37.0.0'/buildToolsVersion = '36.0.0'/" build.gradle
-          sed -i "s/compileSdk = 37.2/compileSdk = 37/" build.gradle
-          sed -i "s/targetSdk = 37.2/targetSdk = 37/" build.gradle
+          sed -i "s/compileSdk = 37.2/compileSdk = 36/" build.gradle
+          sed -i "s/targetSdk = 37.2/targetSdk = 36/" build.gradle
 
+      # 7. Cria metadados Git necessários pelo projeto
       - name: Prepare Git metadata
         working-directory: runnerup
         run: |
@@ -58,19 +59,33 @@ jobs:
           git add -A
           git commit -m "Pace Coach V1.7 build base" >/dev/null 2>&1 || true
 
+      # 8. Instala Gradle diretamente
+      # Não usa o gradle-wrapper.jar do ZIP
+      - name: Install Gradle 9.6.1
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-9.6.1-bin.zip
+          unzip -q gradle-9.6.1-bin.zip -d "$HOME"
+          echo "$HOME/gradle-9.6.1/bin" >> "$GITHUB_PATH"
+          gradle --version
+
+      # 9. Compila o APK
       - name: Build APK
         working-directory: runnerup
         run: |
           gradle :app:assembleLatestDebug --no-daemon
 
+      # 10. Localiza o APK
       - name: Find APK
         run: |
-          echo "===== APK GERADO ====="
+          echo "======================================"
+          echo "        APK GERADO"
+          echo "======================================"
           find runnerup/app/build/outputs/apk -type f -name "*.apk" -print
 
+      # 11. Publica o APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PaceCoach-V1.7-debug
           path: runnerup/app/build/outputs/apk/**/*.apk
-          if-no-files-found: error
+          if-no-files-found: error 

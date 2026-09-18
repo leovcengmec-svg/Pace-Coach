@@ -1,4 +1,4 @@
-name: Build Pace Coach
+name: Build Pace Coach V5.8
 
 on:
   workflow_dispatch:
@@ -31,10 +31,16 @@ jobs:
           sdkmanager --channel=3 "platforms;android-37.0"
           sdkmanager "build-tools;37.0.0"
 
-      - name: Extract Pace Coach
+      - name: Extract Pace Coach V5.8
         run: |
           rm -rf runnerup
-          unzip -q PaceCoach_RunnerUp_V5_0_source.zip -d runnerup
+          mkdir -p runnerup
+          unzip -q PaceCoach_RunnerUp_V5_8_READY.zip -d runnerup
+
+      - name: Locate source
+        run: |
+          echo "===== ESTRUTURA DO PROJETO ====="
+          find runnerup -maxdepth 2 \( -name "settings.gradle" -o -name "build.gradle" \) -print
 
       - name: Align Android SDK versions
         working-directory: runnerup
@@ -50,7 +56,7 @@ jobs:
           git config user.email "build@pacecoach.local"
           git config user.name "Pace Coach Build"
           git add -A
-          git commit -m "Pace Coach V1.7 build base" >/dev/null 2>&1 || true
+          git commit -m "Pace Coach V5.8 build base" >/dev/null 2>&1 || true
 
       - name: Install Gradle 9.6.1
         run: |
@@ -67,13 +73,13 @@ jobs:
       - name: Find APK
         run: |
           echo "======================================"
-          echo "        APK GERADO"
+          echo "          APK V5.8 GERADO"
           echo "======================================"
           find runnerup/app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: PaceCoach-V1.7-debug
+          name: PaceCoach-V5.8-debug
           path: runnerup/app/build/outputs/apk/**/*.apk
-          if-no-files-found: error
+          if-no-files-found: error 

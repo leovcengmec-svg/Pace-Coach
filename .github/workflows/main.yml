@@ -35,7 +35,7 @@ jobs:
         run: |
           rm -rf runnerup
           mkdir -p runnerup
-          unzip -q PaceCoach_RunnerUp_V5_8_READY_FIX2.zip -d runnerup
+          unzip -q PaceCoach_RunnerUp_V5_8_Source.zip -d runnerup
 
       - name: Locate source
         run: |
